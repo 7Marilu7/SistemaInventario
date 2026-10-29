@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes | Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Panel de administración</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="{{ url_for('inicio') }}" class="enlace">⌂ &nbsp; Panel principal</a>
+            <a href="{{ url_for('productos') }}" class="enlace">▦ &nbsp; Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace">⇄ &nbsp; Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">▤ &nbsp; Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace">♧ &nbsp; Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace activo">▥ &nbsp; Reportes</a>
+        </nav>
+
+        <div class="pie-menu">
+            Sistema de Inventario Web
+            <span>Versión inicial 1.0</span>
+        </div>
+    </aside>
+
+    <main class="contenido pagina-modulo">
+
+        <header class="encabezado-reportes">
+            <div>
+                <h1>Reportes de inventario</h1>
+                <p>Consulta las existencias, las alertas y los movimientos.</p>
+            </div>
+        </header>
+
+        <section class="rejilla-resumen">
+
+            <article class="tarjeta-reporte">
+                <span class="etiqueta">Productos activos</span>
+                <strong class="valor">
+                    {{ resumen["total_productos"] }}
+                </strong>
+            </article>
+
+            <article class="tarjeta-reporte">
+                <span class="etiqueta">Unidades en inventario</span>
+                <strong class="valor">
+                    {{ resumen["total_existencias"] }}
+                </strong>
+            </article>
+
+            <article class="tarjeta-reporte">
+                <span class="etiqueta">Valor al costo</span>
+                <strong class="valor">
+                    ${{ "%.2f"|format(resumen["valor_inventario"] or 0) }}
+                </strong>
+            </article>
+
+            <article class="tarjeta-reporte">
+                <span class="etiqueta">Valor estimado de venta</span>
+                <strong class="valor">
+                    ${{ "%.2f"|format(resumen["valor_venta_estimado"] or 0) }}
+                </strong>
+            </article>
+
+        </section>
+
+        <section class="seccion-reporte">
+            <h2>Alertas de existencias</h2>
+
+            <div class="contenedor-tabla-reporte">
+                <table class="tabla-reporte">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Existencias</th>
+                            <th>Stock mínimo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for producto in alertas %}
+                        <tr>
+                            <td>{{ producto["codigo"] }}</td>
+                            <td>{{ producto["nombre"] }}</td>
+                            <td>{{ producto["categoria"] or "Sin categoría" }}</td>
+                            <td>{{ producto["existencias"] }}</td>
+                            <td>{{ producto["stock_minimo"] }}</td>
+                            <td>{% if producto["existencias"] == 0 %}
+                                    <span class="estado-stock estado-agotado">
+                                        AGOTADO
+                                    </span>
+                                {% else %}
+                                    <span class="estado-stock estado-bajo">
+                                        STOCK BAJO
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="mensaje-vacio">
+                                No hay productos con stock bajo o agotado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="seccion-reporte">
+            <h2>Inventario actual</h2>
+            <a href="{{ url_for('exportar_inventario_excel') }}" class="boton-reporte">↓ Descargar inventario en Excel</a>
+
+            <div class="contenedor-tabla-reporte">
+                <table class="tabla-reporte">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Existencias</th>
+                            <th>Precio de costo</th>
+                            <th>Precio de venta</th>
+                            <th>Valor al costo</th>
+                            <th>Valor de venta</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for producto in inventario %}
+                        <tr>
+                            <td>{{ producto["codigo"] }}</td>
+                            <td>{{ producto["nombre"] }}</td>
+                            <td>{{ producto["categoria"] or "Sin categoría" }}</td>
+                            <td>{{ producto["existencias"] }}</td>
+                            <td>${{ "%.2f"|format(producto["precio_costo"] or 0) }}</td>
+                            <td>${{ "%.2f"|format(producto["precio_venta"] or 0) }}</td>
+                            <td>${{ "%.2f"|format(producto["valor_costo"] or 0) }}</td>
+                            <td>${{ "%.2f"|format(producto["valor_venta"] or 0) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="mensaje-vacio">
+                                No hay productos activos para mostrar.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+       <section class="seccion-reporte" id="reporte-movimientos">
+    <h2>Reporte de movimientos</h2>
+    
+        <form method="GET"
+            action="{{ url_for('reportes') }}#reporte-movimientos"
+            class="filtros-reportes">
+
+        <div class="campo-filtro">
+            <label for="fecha_inicio">Fecha inicial</label>
+            <input
+                type="date"
+                id="fecha_inicio"
+                name="fecha_inicio"
+                value="{{ fecha_inicio }}">
+        </div>
+
+        <div class="campo-filtro">
+            <label for="fecha_fin">Fecha final</label>
+            <input
+                type="date"
+                id="fecha_fin"
+                name="fecha_fin"
+                value="{{ fecha_fin }}">
+        </div>
+
+        <button type="submit" class="boton-reporte">Filtrar movimientos</button>
+
+    <a href="{{ url_for('reportes') }}#reporte-movimientos" class="boton-reporte boton-secundario">Limpiar filtros</a>
+</form>
+
+            <div class="acciones-exportacion">
+    <a href="{{ url_for('exportar_movimientos_excel') }}" class="boton-reporte">↓ Descargar todos los movimientos</a>
+    <a href="{{ url_for(
+        'exportar_movimientos_filtrados_excel',
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin
+    ) }}"
+       class="boton-reporte boton-secundario">↓ Descargar movimientos del periodo</a>
+</div>
+
+            <div class="resumen-movimientos">
+                <div class="dato-movimiento">
+                    <span>Total de movimientos</span>
+                    <strong>{{ totales_movimientos["total_movimientos"] }}</strong>
+                </div>
+
+                <div class="dato-movimiento">
+                    <span>Unidades de entrada</span>
+                    <strong>{{ totales_movimientos["total_entradas"] }}</strong>
+                </div>
+
+                <div class="dato-movimiento">
+                    <span>Unidades de salida</span>
+                    <strong>{{ totales_movimientos["total_salidas"] }}</strong>
+                </div>
+            </div>
+
+            <div class="contenedor-tabla-reporte">
+                <table class="tabla-reporte">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Existencias anteriores</th>
+                            <th>Existencias nuevas</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for movimiento in movimientos %}
+                        <tr>
+                            <td>{{ movimiento["fecha"] }}</td>
+                            <td>
+                                {% if movimiento["tipo"] == "entrada" %}
+                                    <span class="estado-stock estado-bajo">
+                                        ENTRADA
+                                    </span>
+                                {% else %}
+                                    <span class="estado-stock estado-agotado">
+                                        SALIDA
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ movimiento["codigo"] }}</td>
+                            <td>{{ movimiento["producto"] }}</td>
+                            <td>{{ movimiento["cantidad"] }}</td>
+                            <td>{{ movimiento["existencias_anteriores"] }}</td>
+                            <td>{{ movimiento["existencias_nuevas"] }}</td>
+                            <td>{{ movimiento["motivo"] }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="mensaje-vacio">
+                                No hay movimientos en el periodo seleccionado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proveedores | Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Panel de administración</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="/" class="enlace">⌂ &nbsp; Panel principal</a>
+            <a href="{{ url_for('productos') }}" class="enlace">▦ &nbsp; Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace">⇄ &nbsp; Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">▤ &nbsp; Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace activo">♧ &nbsp; Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace">▥ &nbsp; Reportes</a>
+        </nav>
+
+        <div class="pie-menu">
+            Sistema de Inventario Web
+            <span>Versión inicial 1.0</span>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <header class="encabezado">
+            <div>
+                <p class="sobretitulo">ADMINISTRACIÓN</p>
+                <h1>Proveedores</h1>
+                <p class="subtitulo">Administra los datos de tus proveedores.</p>
+            </div>
+
+            <div class="etiqueta-estado">
+                <span class="punto"></span>
+                Sistema iniciado
+            </div>
+        </header>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="mensaje-flash {{ categoria }}">
+                        {{ mensaje }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="panel">
+
+            <div class="panel-titulo">
+                <div>
+                    <h3>Directorio de proveedores</h3>
+                    <p>Consulta y administra tus contactos comerciales.</p>
+                </div>
+
+                <a href="{{ url_for('nuevo_proveedor') }}" class="boton boton-principal">+ Nuevo proveedor</a>
+            </div>
+
+            <form method="GET" action="{{ url_for('proveedores') }}" class="formulario-busqueda">
+                <input type="search" name="buscar" placeholder="Buscar por nombre, teléfono o correo..." value="{{ busqueda }}">
+                <button type="submit" class="boton boton-secundario">Buscar</button>
+                {% if busqueda %}
+                    <a href="{{ url_for('proveedores') }}" class="boton boton-secundario">Limpiar</a>
+                {% endif %}
+            </form>
+
+            <div class="tabla-contenedor">
+                <table class="tabla-movimientos">
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Dirección</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for proveedor in proveedores %}
+                            <tr>
+                                <td><strong>{{ proveedor.nombre }}</strong></td>
+                                <td>{{ proveedor.telefono or '—' }}</td>
+                                <td>{{ proveedor.correo or '—' }}</td>
+                                <td>{{ proveedor.direccion or '—' }}</td>
+                                <td>
+                                    <div class="acciones-tabla">
+                                        <a href="{{ url_for('editar_proveedor', proveedor_id=proveedor.id) }}" class="boton boton-secundario">Editar</a>
+                                        <form method="POST" action="{{ url_for('desactivar_proveedor', proveedor_id=proveedor.id) }}" onsubmit="return confirm('¿Deseas desactivar este proveedor?');">
+                                            <button type="submit" class="boton boton-peligro">Desactivar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="sin-resultados">
+                                    {% if busqueda %}
+                                        No se encontraron proveedores con esa búsqueda.
+                                    {% else %}
+                                        Todavía no hay proveedores registrados.
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <footer class="pie-pagina">
+            Sistema de Inventario Web · 2026
+        </footer>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

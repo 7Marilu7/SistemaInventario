@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimientos | Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="contenedor-principal">
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Sistema de gestión</p>
+            </div>
+        </div>
+        
+<nav class="menu">
+            <a href="{{ url_for('inicio') }}" class="enlace">⌂ &nbsp; Panel principal</a>
+            <a href="{{ url_for('productos') }}" class="enlace activo">▦ &nbsp; Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace">⇄ &nbsp; Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">▤ &nbsp; Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace">♧ &nbsp; Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace">▥ &nbsp; Reportes</a>
+        </nav>
+    </aside>
+
+    <main class="contenido">
+        <header class="encabezado-pagina">
+            <div>
+                <h1>Movimientos de inventario</h1>
+                <p>Controla las entradas y salidas de mercancía.</p>
+            </div>
+
+            <a href="{{ url_for('nuevo_movimiento') }}" class="boton boton-principal">+ Registrar movimiento</a>
+        </header>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="mensaje-flash {{ categoria }}">
+                        {{ mensaje }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="formulario-panel">
+            <form method="GET" action="{{ url_for('movimientos') }}"
+                  class="formulario-busqueda">
+
+                <input type="text" name="buscar" placeholder="Buscar por código, producto o motivo..." value="{{ busqueda }}">
+
+                <select name="tipo">
+                    <option value="">Todos los movimientos</option>
+                    <option value="entrada"
+                        {% if tipo_filtro == 'entrada' %}selected{% endif %}>
+                        Entradas
+                    </option>
+                    <option value="salida"
+                        {% if tipo_filtro == 'salida' %}selected{% endif %}>
+                        Salidas
+                    </option>
+                </select>
+
+                <button type="submit" class="boton boton-principal">Buscar</button>
+                <a href="{{ url_for('movimientos') }}" class="boton boton-secundario">Limpiar</a>
+            </form>
+        </section>
+
+        <section class="seccion-tabla">
+            <div class="encabezado-seccion">
+                <h2>Historial de movimientos</h2>
+                <span>{{ movimientos|length }} registros</span>
+            </div>
+
+            <div class="tabla-contenedor">
+                <table class="tabla-movimientos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Existencias anteriores</th>
+                            <th>Existencias nuevas</th>
+                            <th>Motivo</th>
+                            <th>Notas</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for movimiento in movimientos %}
+                        <tr>
+                            <td>{{ movimiento['fecha'] }}</td>
+                            <td>{{ movimiento['codigo'] }}</td>
+                            <td>{{ movimiento['producto'] }}</td>
+
+                            <td>
+                                {% if movimiento['tipo'] == 'entrada' %}
+                                    <span class="estado-movimiento entrada">
+                                        Entrada
+                                    </span>
+                                {% else %}
+                                    <span class="estado-movimiento salida">
+                                        Salida
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>{{ movimiento['cantidad'] }}</td>
+                            <td>{{ movimiento['existencias_anteriores'] }}</td>
+                            <td>{{ movimiento['existencias_nuevas'] }}</td>
+                            <td>{{ movimiento['motivo'] }}</td>
+                            <td>{{ movimiento['notas'] or '—' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="sin-resultados">
+                                No hay movimientos registrados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

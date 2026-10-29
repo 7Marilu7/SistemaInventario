@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }} | Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Panel de administración</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="{{ url_for('inicio') }}" class="enlace">⌂ &nbsp; Panel principal</a>
+            <a href="{{ url_for('productos') }}" class="enlace activo">▦ &nbsp; Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace">⇄ &nbsp; Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">▤ &nbsp; Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace">♧ &nbsp; Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace">▥ &nbsp; Reportes</a>
+        </nav>
+
+        <div class="pie-menu">
+            Sistema de Inventario Web
+            <span>Versión inicial 1.0</span>
+        </div>
+    </aside>
+
+    <main class="contenido pagina-modulo">
+        <header class="encabezado">
+            <div>
+                <p class="sobretitulo">GESTIÓN DE INVENTARIO</p>
+                <h1>{{ titulo }}</h1>
+                <p class="subtitulo">Completa la información del producto.</p>
+            </div>
+        </header>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="mensaje {{ categoria }}">{{ mensaje }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="panel">
+            <form method="POST" class="formulario-producto">
+                <div class="formulario-seccion">
+                    <h3>Información general</h3>
+                    <p>Identifica el artículo dentro de tu inventario.</p>
+                </div>
+
+                <div class="campos-formulario">
+                    <div class="campo">
+                        <label for="codigo">Código del producto *</label>
+                        <input type="text" id="codigo" name="codigo" maxlength="100" required value="{{ producto.codigo if producto else '' }}" placeholder="Ej. PROD-001">
+                    </div>
+
+                    <div class="campo">
+                        <label for="nombre">Nombre del producto *</label>
+                        <input type="text" id="nombre" name="nombre" maxlength="200" required value="{{ producto.nombre if producto else '' }}" placeholder="Ej. Aceite para motor">
+                    </div>
+
+                    <div class="campo campo-completo">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" rows="3" placeholder="Características o detalles del producto">{{ producto.descripcion if producto else '' }}</textarea>
+                    </div>
+
+                    <div class="campo">
+                        <label for="categoria_id">Categoría</label>
+                        <select id="categoria_id" name="categoria_id">
+                            <option value="">Sin categoría</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" {% if producto and producto.categoria_id == categoria.id %}selected{% endif %}>
+                                    {{ categoria.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="proveedor_id">Proveedor</label>
+                        <select id="proveedor_id" name="proveedor_id">
+                            <option value="">Sin proveedor</option>
+                            {% for proveedor in proveedores %}
+                                <option value="{{ proveedor.id }}"
+                                    {% if producto and producto.proveedor_id == proveedor.id %}selected{% endif %}>
+                                    {{ proveedor.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="formulario-seccion">
+                    <h3>Precios y existencias</h3>
+                    <p>Registra los importes y niveles de inventario.</p>
+                </div>
+
+                <div class="campos-formulario">
+                    <div class="campo">
+                        <label for="precio_costo">Precio de compra (MXN) *</label>
+                        <input type="number" id="precio_costo" name="precio_costo" min="0" step="0.01" required value="{{ producto.precio_costo if producto else '0.00' }}">
+                    </div>
+
+                    <div class="campo">
+                        <label for="precio_venta">Precio de venta (MXN) *</label>
+                        <input type="number" id="precio_venta" name="precio_venta" min="0" step="0.01" required value="{{ producto.precio_venta if producto else '0.00' }}">
+                    </div>
+
+                    {% if not producto %}
+                        <div class="campo">
+                            <label for="existencias">Existencias iniciales *</label>
+                            <input type="number" id="existencias" name="existencias" min="0" step="1" required value="0">
+                            <small>Si registras existencias, se creará una entrada inicial.</small>
+                        </div>
+                    {% else %}
+                        <div class="campo">
+                            <label>Existencias actuales</label>
+                            <input type="number" value="{{ producto.existencias }}" disabled>
+                            <small>Las existencias se modifican mediante entradas y salidas.</small>
+                        </div>
+                    {% endif %}
+
+                    <div class="campo">
+                        <label for="stock_minimo">Stock mínimo *</label>
+                        <input type="number" id="stock_minimo" name="stock_minimo" min="0" step="1" required value="{{ producto.stock_minimo if producto else '0' }}">
+                        <small>El sistema marcará el producto cuando alcance este nivel.</small>
+                    </div>
+                </div>
+
+                <div class="acciones-formulario">
+                    <a class="boton boton-secundario" href="{{ url_for('productos') }}">Cancelar</a>
+                    <button type="submit" class="boton boton-principal">{{ 'Guardar cambios' if producto else 'Registrar producto' }}</button>
+                </div>
+            </form>
+        </section>
+
+        <footer class="pie-pagina">
+            Sistema de Inventario Web · 2026
+        </footer>
+    </main>
+</body>
+</html>

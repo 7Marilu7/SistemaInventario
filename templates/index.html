@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel principal | Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Panel de administración</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="/" class="enlace activo">⌂ &nbsp; Panel principal</a>
+            <a href="{{ url_for('productos') }}" class="enlace">▦ &nbsp; Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace">⇄ &nbsp; Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">▤ &nbsp; Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace">♧ &nbsp; Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace">▥ &nbsp; Reportes</a>
+        </nav>
+
+        <div class="pie-menu">
+            Sistema de Inventario Web
+            <span>Versión inicial 1.0</span>
+        </div>
+    </aside>
+
+    <main class="contenido">
+        <header class="encabezado">
+            <div>
+                <p class="sobretitulo">ADMINISTRACIÓN</p>
+                <h1>Panel principal</h1>
+                <p class="subtitulo">Bienvenido a tu sistema de inventario.</p>
+            </div>
+
+            <div class="etiqueta-estado">
+                <span class="punto"></span>
+                Sistema iniciado
+            </div>
+        </header>
+
+        <section class="bienvenida">
+            <div>
+                <span class="etiqueta">CONTROL DE INVENTARIO</span>
+                <h2>Todo tu inventario en un solo lugar</h2>
+                <p>Administra productos, controla existencias y consulta los movimientos de tu negocio.</p>
+            </div>
+
+            <div class="icono-bienvenida">▦</div>
+        </section>
+
+        <section class="estadisticas">
+            <article class="tarjeta">
+                <div class="tarjeta-superior">
+                    <span>Productos registrados</span>
+                    <span class="icono-tarjeta">▦</span>
+                </div>
+                <p class="valor">{{ total_productos }}</p>
+                <p class="descripcion">Productos activos</p>
+            </article>
+
+            <article class="tarjeta">
+                <div class="tarjeta-superior">
+                    <span>Unidades disponibles</span>
+                    <span class="icono-tarjeta">▤</span>
+                </div>
+                <p class="valor">{{ total_unidades }}</p>
+                <p class="descripcion">En todo el inventario</p>
+            </article>
+
+            <article class="tarjeta">
+                <div class="tarjeta-superior">
+                    <span>Stock bajo</span>
+                    <span class="icono-tarjeta alerta">!</span>
+                </div>
+                <p class="valor">{{ stock_bajo }}</p>
+                <p class="descripcion">Productos por reabastecer</p>
+            </article>
+
+            <article class="tarjeta">
+                <div class="tarjeta-superior">
+                    <span>Productos agotados</span>
+                    <span class="icono-tarjeta agotado">!</span>
+                </div>
+                <p class="valor">{{ productos_agotados }}</p>
+                <p class="descripcion">Sin existencias</p>
+            </article>
+        </section>
+
+        <section class="panel-inferior">
+            <div class="panel">
+                <div class="panel-titulo">
+                    <div>
+                        <h3>Movimientos recientes</h3>
+                        <p>Últimas operaciones del inventario</p>
+                    </div>
+                </div>
+
+                {% if movimientos %}
+                    <div class="tabla-contenedor">
+                        <table class="tabla-movimientos">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movimiento in movimientos %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ movimiento.producto }}</strong>
+                                            <small>{{ movimiento.codigo }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="tipo-movimiento {{ movimiento.tipo }}">{{ movimiento.tipo|capitalize }}</span>
+                                        </td>
+                                        <td>{{ movimiento.cantidad }}</td>
+                                        <td>{{ movimiento.fecha }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="estado-vacio">
+                        <div class="estado-vacio-icono">⇄</div>
+                        <h4>Aún no hay movimientos</h4>
+                        <p>Cuando registres entradas o salidas, aparecerán aquí.</p>
+                    </div>
+                {% endif %}
+                </div>
+
+            <div class="panel panel-rapido">
+                <h3>Accesos rápidos</h3>
+                <p>Accede directamente a las funciones principales del sistema.</p>
+
+                <div class="acceso">
+                    <span>＋</span>
+                    <div>
+                         <a href="{{ url_for('nuevo_producto') }}" class="acceso"><strong>Registrar producto</strong></a>
+                        <p>Agregar artículos al inventario</p>
+                    </div>
+                </div>
+
+                <div class="acceso">
+                    <span>⇄</span>
+                    <div>
+                        <a href="{{ url_for('nuevo_movimiento') }}" class="acceso"><strong>Nuevo movimiento</strong></a>
+                        <p>Registrar una entrada o salida</p>
+                    </div>
+                </div>
+
+                <div class="acceso">
+                    <span>▥</span>
+                    <div>
+                        <a href="{{ url_for('reportes') }}" class="acceso"><strong>Consultar reportes</strong></a>
+                        <p>Revisar las existencias</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="pie-pagina">
+            Sistema de Inventario Web · 2026
+        </footer>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

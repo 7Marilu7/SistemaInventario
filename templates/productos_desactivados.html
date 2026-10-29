@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos desactivados | Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Panel de administración</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="{{ url_for('inicio') }}" class="enlace">⌂ &nbsp; Panel principal</a>
+            <a href="{{ url_for('productos') }}" class="enlace activo">▦ &nbsp; Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace">⇄ &nbsp; Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">▤ &nbsp; Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace">♧ &nbsp; Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace">▥ &nbsp; Reportes</a>
+        </nav>
+
+        <div class="pie-menu">
+            Sistema de Inventario Web
+            <span>Versión inicial 1.0</span>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <header class="encabezado">
+            <div>
+                <p class="sobretitulo">ADMINISTRACIÓN</p>
+                <h1>Productos desactivados</h1>
+                <p class="subtitulo">
+                    Consulta y recupera los productos que has desactivado.
+                </p>
+            </div>
+
+            <div class="etiqueta-estado">
+                <span class="punto"></span>
+                Sistema iniciado
+            </div>
+        </header>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="mensaje-flash {{ categoria }}">
+                        {{ mensaje }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="panel">
+
+            <div class="panel-titulo">
+                <div>
+                    <h3>Archivo de productos</h3>
+                    <p>Los productos aquí mostrados se conservan
+                       en el sistema, pero no están activos.</p>
+                </div>
+
+                <a href="{{ url_for('productos') }}" class="boton boton-secundario">Volver a productos</a>
+            </div>
+
+            <div class="contador-productos">
+                {{ productos|length }}
+                {% if productos|length == 1 %}
+                    producto desactivado
+                {% else %}
+                    productos desactivados
+                {% endif %}
+            </div>
+
+            <form class="formulario-busqueda" method="GET" action="{{ url_for('productos_desactivados') }}">
+                <input type="search" name="buscar" placeholder="Buscar por código o nombre..." value="{{ busqueda }}">
+                <button type="submit" class="boton boton-principal">Buscar</button>
+
+                {% if busqueda %}
+                    <a class="boton boton-secundario"
+                       href="{{ url_for('productos_desactivados') }}">
+                        Limpiar
+                    </a>
+                {% endif %}
+            </form>
+
+            {% if productos %}
+
+                <div class="tabla-contenedor">
+                    <table class="tabla-movimientos tabla-productos">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Proveedor</th>
+                                <th>Precio compra</th>
+                                <th>Precio venta</th>
+                                <th>Existencias</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for producto in productos %}
+                                <tr>
+                                    <td>{{ producto.codigo }}</td>
+                                    <td><strong>{{ producto.nombre }}</strong> <small>{{ producto.descripcion or 'Sin descripción' }}</small></td>
+                                    <td>{{ producto.categoria or 'Sin categoría' }}</td>
+                                    <td>{{ producto.proveedor or 'Sin proveedor' }}</td>
+                                    <td>${{ "%.2f"|format(producto.precio_costo) }} MXN</td>
+                                    <td>${{ "%.2f"|format(producto.precio_venta) }} MXN</td>
+                                    <td>{{ producto.existencias }}</td>
+                                    <td>
+                                        <div class="acciones-producto">
+                                            <form
+                                                method="POST"
+                                                action="{{ url_for('reactivar_producto', producto_id=producto.id) }}"
+                                                onsubmit="return confirm('¿Deseas reactivar este producto?');">
+                                                <button type="submit"class="boton boton-reactivar">Reactivar</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% else %}
+
+                <div class="estado-vacio">
+                    <div class="estado-vacio-icono">▦</div>
+
+                    <h4>
+                        {% if busqueda %}
+                            No se encontraron productos
+                        {% else %}
+                            No hay productos desactivados
+                        {% endif %}
+                    </h4>
+
+                    <p>
+                        {% if busqueda %}
+                            Prueba con otro código o nombre.
+                        {% else %}
+                            Cuando desactives un producto,
+                            aparecerá en este apartado.
+                        {% endif %}
+                    </p>
+
+                    {% if not busqueda %}
+                        <a href="{{ url_for('productos') }}"
+                           class="boton boton-principal">
+                            Ir a productos
+                        </a>
+                    {% endif %}
+                </div>
+
+            {% endif %}
+
+        </section>
+
+        <footer class="pie-pagina">
+            Sistema de Inventario Web · 2026
+        </footer>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

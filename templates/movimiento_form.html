@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar movimiento | Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="contenedor-principal">
+
+    <aside class="barra-lateral">
+        <div class="marca">
+            <div class="marca-icono">SI</div>
+            <div>
+                <h2>INVENTARIO</h2>
+                <p>Sistema de gestión</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="{{ url_for('inicio') }}" class="enlace">Inicio</a>
+            <a href="{{ url_for('productos') }}" class="enlace">Productos</a>
+            <a href="{{ url_for('movimientos') }}" class="enlace activo">Movimientos</a>
+            <a href="{{ url_for('categorias') }}" class="enlace">Categorías</a>
+            <a href="{{ url_for('proveedores') }}" class="enlace">Proveedores</a>
+            <a href="{{ url_for('reportes') }}" class="enlace">Reportes</a>
+        </nav>
+
+        <div class="pie-menu">
+            <strong>Sistema de Inventario</strong>
+            <span>Control de mercancía</span>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <header class="encabezado-pagina">
+            <div>
+                <span class="sobretitulo">INVENTARIO / MOVIMIENTOS</span>
+                <h1>Registrar movimiento</h1>
+                <p>Registra entradas y salidas para mantener actualizado tu inventario.</p>
+            </div>
+
+            <a href="{{ url_for('movimientos') }}" class="boton boton-secundario">← Volver al historial</a>
+        </header>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <div class="mensaje-flash {{ categoria }}">
+                        {{ mensaje }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="formulario-panel panel-movimiento">
+
+            <div class="panel-titulo">
+                <div>
+                    <h2>Información del movimiento</h2>
+                    <p>Los campos marcados con * son obligatorios.</p>
+                </div>
+            </div>
+
+            {% if productos %}
+                <form method="POST" action="{{ url_for('nuevo_movimiento') }}" class="formulario-inventario formulario-movimiento">
+
+                    <div class="campo">
+                        <label for="producto_id">Producto *</label>
+
+                        <select id="producto_id" name="producto_id" required>
+                            <option value="">Selecciona un producto</option>
+
+                            {% for producto in productos %}
+                                <option value="{{ producto['id'] }}">
+                                    {{ producto['codigo'] }} - {{ producto['nombre'] }}
+                                    (Existencias: {{ producto['existencias'] }})
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <small>Selecciona el producto que tendrá el movimiento.</small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="tipo">Tipo de movimiento *</label>
+
+                        <select id="tipo" name="tipo" required>
+                            <option value="">Selecciona el tipo</option>
+                            <option value="entrada">Entrada: aumentar existencias</option>
+                            <option value="salida">Salida: disminuir existencias</option>
+                        </select>
+
+                        <small>Una entrada suma unidades; una salida las descuenta.</small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="cantidad">Cantidad de unidades *</label>
+
+                        <input type="number" id="cantidad" name="cantidad" min="1" step="1" required placeholder="Ej. 10">
+
+                        <small>Introduce un número entero mayor que cero.</small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="motivo">Motivo *</label>
+
+                        <select id="motivo" name="motivo" required>
+                            <option value="">Selecciona un motivo</option>
+                            <option value="Compra">Compra de mercancía</option>
+                            <option value="Venta">Venta de mercancía</option>
+                            <option value="Devolución">Devolución</option>
+                            <option value="Ajuste de inventario">Ajuste de inventario</option>
+                            <option value="Merma">Merma o producto dañado</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+
+                        <small>Indica por qué se realiza el movimiento.</small>
+                    </div>
+
+                    <div class="campo campo-notas">
+                        <label for="notas">Notas adicionales</label>
+
+                        <textarea id="notas" name="notas" rows="4" placeholder="Agrega detalles adicionales, referencias o comentarios (opcional)"></textarea>
+                    </div>
+
+                    <div class="aviso-movimiento">
+                        <span class="aviso-icono">i</span>
+                        <p>Las existencias se actualizarán automáticamente al guardar.
+                           No se permiten salidas mayores a las unidades disponibles.</p>
+                    </div>
+
+                    <div class="acciones-formulario">
+                        <a href="{{ url_for('movimientos') }}" class="boton boton-secundario">Cancelar</a>
+                        <button type="submit" class="boton boton-principal">Guardar movimiento</button>
+                    </div>
+
+                </form>
+            {% else %}
+                <div class="estado-sin-productos">
+                    <h3>No hay productos disponibles</h3>
+                    <p>Primero registra al menos un producto activo para poder
+                       generar entradas y salidas de inventario.</p>
+
+                    <a href="{{ url_for('nuevo_producto') }}" class="boton boton-principal">Registrar producto</a>
+                </div>
+            {% endif %}
+
+        </section>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
