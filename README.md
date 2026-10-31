@@ -38,6 +38,7 @@ SistemaInventario/
 ├── requirements
 ├── .gitignore
 └── README.md
+```
 
 ## Instalación local
 
